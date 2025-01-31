@@ -1,8 +1,9 @@
 from django.shortcuts import render
-from django.http import HttpResponse
+
 from . import util
 
 from markdown2 import Markdown
+import random
 
 def index(request):
     return render(request, "encyclopedia/index.html", {
@@ -80,3 +81,8 @@ def save_edit(request):
                     "content": content,
                     "title" : title,
                 })
+        
+def rand_page(request):
+    entries = util.list_entries()
+    entry_title = random.choice(entries)
+    return(entry(request, entry_title))
