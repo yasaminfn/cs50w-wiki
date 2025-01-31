@@ -1,5 +1,5 @@
 from django.shortcuts import render
-
+from django.http import HttpResponse
 from . import util
 
 from markdown2 import Markdown
@@ -17,7 +17,7 @@ def convert(filename):
 
 def entry(request, filename):
     print(f"Searching for entry: {filename}")
-    html_content = convert(filename.strip())
+    html_content = convert(filename).strip()
     print(html_content)
     if html_content == None:
         return render(request, "encyclopedia/error.html",{
@@ -41,9 +41,8 @@ def search(request):
                     "title" : q,
                 })
             
-def newpage(request):
+def newpage(request, title):
     if request.method == "POST":
-        title = request.POST.get('title')
         content = request.POST.get('content')
 
         if title in util.list_entries():
@@ -58,4 +57,26 @@ def newpage(request):
 
 
 def  edit(request):
-    return(request, "encyclopedia/edit.html")
+        if request.method == "POST":
+            title = request.POST.get("entry_title".strip())
+            content = util.get_entry(title)
+            return render(request, "encyclopedia/edit.html",{
+                "content": content,
+                "title" : title,
+            })
+        
+def save_edit(request):
+    if request.method == "POST":
+        title = request.POST.get("title")
+        content = request.POST.get("content")
+        if content == "":
+            return render(request, "encyclopedia/error.html",{
+                "message": "Can't save with empty field.",
+                           })
+        else:
+            util.save_entry(title, content)
+            content= convert(title)
+            return render(request, "encyclopedia/entry.html", {
+                    "content": content,
+                    "title" : title,
+                })

@@ -5,9 +5,21 @@
 {% endblock %}
 
 {% block body %}
-    <h1>{{title}}</h1>
+    <div>
+    <h1 >{{title}}</h1>
+    </div>
 
+    <div>
     {{content | safe}}
+    </div>
 
-    <a href="{% url 'edit_entry' %}">Edit the Entry</a>
+
+    <div>
+    <form action="{% url 'edit_entry' %}" method="POST">
+    {% csrf_token %}
+    <input type="hidden" name="entry_title" value="{{title}}">
+    <input type="submit" class="btn btn-danger" value="Edit">
+    </form>
+    </div>
+
 {% endblock %}
