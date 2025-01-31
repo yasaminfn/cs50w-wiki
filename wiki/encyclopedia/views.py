@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 
 from . import util
 
@@ -32,19 +32,33 @@ def entry(request, filename):
         })
 
 def search(request):
-        q = request.POST.get('q'.strip())
-        print(q)
-        if q in util.list_entries():
+        if request.method == "POST":
+            q = request.POST.get('q').strip()
             html_content = convert(q)
             if html_content is not None:
+                print("Search query:", q)  
                 return render(request, "encyclopedia/entry.html", {
                     "content": html_content,
                     "title" : q,
-                })
+                    })        
             
-def newpage(request, title):
+            else:
+                recommendations = []
+                for item in util.list_entries():
+                    if q.lower() in item.lower():
+                        recommendations.append(item)
+
+                
+                print("Recommendations found:", recommendations)
+                return render(request, "encyclopedia/search.html", {
+                    "entries" : recommendations,
+                    "q" : q,
+                    })
+            
+def newpage(request):
     if request.method == "POST":
         content = request.POST.get('content')
+        title = request.POST.get("title").strip()
 
         if title in util.list_entries():
             return render(request, "encyclopedia/error.html", {
@@ -52,6 +66,7 @@ def newpage(request, title):
             })
         else:
             util.save_entry(title, content)
+            return redirect('markdown_page', filename=title)
     return render(request, "encyclopedia/newpage.html")
         
 
